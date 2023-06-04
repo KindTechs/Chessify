@@ -7,7 +7,7 @@ import Engine
 
 WIDTH = HEIGHT = 1024
 DIMENSION = 8  # 8x8 board dimensions
-SQUARE_SIZE = HEIGHT / DIMENSION
+SQUARE_SIZE = HEIGHT // DIMENSION
 MAX_FPS = 15  # for animations
 IMAGES = {}
 
@@ -32,10 +32,29 @@ def main():
     gameState = Engine.GameState()
     loadImages()  # load images only once
     running = True
+    squareSelected = () #keep track of the last user click in a tuple (row, column)
+    playerClicks = [] #keep track of player clicks in two tuples.
     while running:
         for event in py.event.get():
             if event.type == py.QUIT:
                 running = False
+            elif event.type == py.MOUSEBUTTONDOWN:
+                location = py.mouse.get_pos() #x,y location of the mouse
+                column = location[0] // SQUARE_SIZE
+                row = location[1] // SQUARE_SIZE
+                if squareSelected == (row, column): #user clicked the same square twice
+                    squareSelected = () #deselect the square
+                    playerClicks = [] #clear the player clicks
+                else:
+                    squareSelected = (row, column)
+                    playerClicks.append(squareSelected) #append for both first and second clicks. From square a To square b
+                if len(playerClicks) == 2:
+                    move = Engine.Move(playerClicks[0], playerClicks[1], gameState.board)
+                    print(move.getChessNotation())
+                    gameState.makeMove(move)
+                    squareSelected = () #reset user clicks
+                    playerClicks = []
+
         drawGameState(screen,gameState)
         clock.tick(MAX_FPS)
         py.display.flip()
