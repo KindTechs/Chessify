@@ -30,6 +30,9 @@ def main():
     clock = py.time.Clock()
     screen.fill((py.Color("white")))
     gameState = Engine.GameState()
+    validMoves = gameState.getValidMoves()
+    moveMade = False
+
     loadImages()  # load images only once
     running = True
     squareSelected = () #keep track of the last user click in a tuple (row, column)
@@ -38,6 +41,7 @@ def main():
         for event in py.event.get():
             if event.type == py.QUIT:
                 running = False
+            #mouse handlers
             elif event.type == py.MOUSEBUTTONDOWN:
                 location = py.mouse.get_pos() #x,y location of the mouse
                 column = location[0] // SQUARE_SIZE
@@ -50,10 +54,20 @@ def main():
                     playerClicks.append(squareSelected) #append for both first and second clicks. From square a To square b
                 if len(playerClicks) == 2:
                     move = Engine.Move(playerClicks[0], playerClicks[1], gameState.board)
-                    print(move.getChessNotation())
-                    gameState.makeMove(move)
+                    #print(move.getChessNotation())
+                    if move in validMoves:
+                        gameState.makeMove(move)
+                        moveMade = True
                     squareSelected = () #reset user clicks
                     playerClicks = []
+            #key handlers
+            elif event.type == py.KEYDOWN:
+                if event.key == py.K_u: #undo when 'u' is pressed
+                    gameState.undoMove()
+                    moveMade = True
+        if moveMade:
+            validMoves = gameState.getValidMoves()
+            moveMade = False
 
         drawGameState(screen,gameState)
         clock.tick(MAX_FPS)
