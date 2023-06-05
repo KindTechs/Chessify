@@ -84,42 +84,79 @@ class GameState:
                 moves.append(Move((row, column), (row + 1, column), self.board))
                 if row == 1 and self.board[row + 2][column] == "--":  # 2 square pawn move
                     moves.append(Move((row, column), (row + 2, column), self.board))
-            if column + 1 <= 7:  # pawn captures to the left
+            if column - 1 >= 0:  # pawn captures to the left
+                if self.board[row + 1][column - 1][0] == 'w':  # white piece to capture diagonally
+                    moves.append(Move((row, column), (row + 1, column - 1), self.board))
+            if column + 1 <= 7:  # pawn captures to the right
                 if self.board[row + 1][column + 1][0] == 'w':  # white piece to capture diagonally
                     moves.append(Move((row, column), (row + 1, column + 1), self.board))
-            if column - 1 >= 0:  # pawn captures to the right
-                if self.board[row + 1][column - 1][0] == 'w':  # black piece to capture diagonally
-                    moves.append(Move((row, column), (row + 1, column - 1), self.board))
 
     '''
     Get all the rook moves for the pawn located at row, column and add these moves to the list
     '''
     def getRookMoves(self, row, column, moves):
-        pass
+        directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]  # Possible directions for rook moves
+        return self.getPieceMoves(row, column, moves, directions)
 
     '''
     Get all the bishop moves for the pawn located at row, column and add these moves to the list
     '''
     def getBishopMoves(self, row, column, moves):
-        pass
+        directions = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
+        return self.getPieceMoves(row, column, moves, directions)
 
     '''
     Get all the knight moves for the pawn located at row, column and add these moves to the list
     '''
     def getKnightMoves(self, row, column, moves):
-        pass
+        knightMoves = [(1, 2), (2, 1), (-1, 2), (-2, 1), (1, -2), (2, -1), (-1, -2), (-2, -1)]
+        return self.getPieceMoves(row, column, moves, knightMoves)
 
     '''
     Get all the queen moves for the pawn located at row, column and add these moves to the list
     '''
     def getQueenMoves(self, row, column, moves):
-        pass
+        directions = [(1, 1), (1, -1), (-1, 1), (-1, -1), (0, 1), (0, -1), (1, 0), (-1, 0)]
+        return self.getPieceMoves(row, column, moves, directions)
 
     '''
     Get all the king moves for the pawn located at row, column and add these moves to the list
     '''
     def getKingMoves(self, row, column, moves):
-        pass
+        kingMoves = [(-1, 0), (-1, -1), (-1, 1), (0, 1), (0, -1), (1, -1), (1, 0), (1, 1)]
+        return self.getPieceMoves(row, column, moves, kingMoves)
+
+    def getPieceMoves(self, row, column, moves, directionsOrMoves):
+        pieceType = self.board[row][column][1]
+        if pieceType in ['q', 'r', 'b']:
+            for direction in directionsOrMoves:
+                d_row, d_column = direction
+                new_row, new_column = row + d_row, column + d_column
+                while 0 <= new_row < 8 and 0 <= new_column < 8:
+                    piece = self.board[new_row][new_column]
+                    if piece == "--":  # Empty square
+                        moves.append(Move((row, column), (new_row, new_column), self.board))
+                    elif self.whiteToMove and piece[0] == 'b':  # White rook/bishop/queen captures black piece
+                        moves.append(Move((row, column), (new_row, new_column), self.board))
+                        break
+                    elif not self.whiteToMove and piece[0] == 'w':  # Black rook/bishop/queen captures white piece
+                        moves.append(Move((row, column), (new_row, new_column), self.board))
+                        break
+                    else:
+                        break  # Own piece blocking the way
+                    new_row += d_row
+                    new_column += d_column
+        if pieceType in ['n', 'k']:
+            for pieceMoves in directionsOrMoves:
+                d_row, d_column = pieceMoves
+                new_row, new_column = row + d_row, column + d_column
+                if 0 <= new_row < 8 and 0 <= new_column < 8:
+                    piece = self.board[new_row][new_column]
+                    if piece == "--" or (self.whiteToMove and piece[0] == 'b') or (
+                            not self.whiteToMove and piece[0] == 'w'):
+                        # King or Knight can move to an empty square or capture opponent's piece
+                        moves.append(Move((row, column), (new_row, new_column), self.board))
+        return moves
 
 
 class Move:

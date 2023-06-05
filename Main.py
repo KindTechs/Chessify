@@ -5,7 +5,7 @@ This file is responsible for handling user input and displaying the current Game
 import pygame as py
 import Engine
 
-WIDTH = HEIGHT = 1024
+WIDTH = HEIGHT = 512
 DIMENSION = 8  # 8x8 board dimensions
 SQUARE_SIZE = HEIGHT // DIMENSION
 MAX_FPS = 15  # for animations
@@ -58,8 +58,10 @@ def main():
                     if move in validMoves:
                         gameState.makeMove(move)
                         moveMade = True
-                    squareSelected = ()  # reset user clicks
-                    playerClicks = []
+                        squareSelected = ()  # reset user clicks
+                        playerClicks = []
+                    else:
+                        playerClicks = [squareSelected]
             # key handlers
             elif event.type == py.KEYDOWN:
                 if event.key == py.K_u:  # undo when 'u' is pressed
